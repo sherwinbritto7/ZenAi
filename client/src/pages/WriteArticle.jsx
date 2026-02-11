@@ -1,15 +1,22 @@
 import React, { useState } from "react";
-import { Check, Edit, FileText, Info, Sparkles } from "lucide-react";
+import {
+  Check,
+  Edit,
+  FileText,
+  Info,
+  Sparkles,
+  Wand2,
+  Loader2,
+} from "lucide-react";
 import { AiToolsData } from "../assets/assets";
-import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import Markdown from "react-markdown";
+import axios from "axios";
 
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const WriteArticle = () => {
-  // 1. Theme Setup from AiToolsData
   const pageTheme = AiToolsData.find(
     (tool) => tool.path === "/ai/write-article",
   );
@@ -33,9 +40,9 @@ const WriteArticle = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      setContent("");
+      setContent(""); // Clears the UI immediately
 
-      const prompt = `Write an article about ${input} in ${selectedLength.desc}`;
+      const prompt = `Write a comprehensive, professional article about ${input} in approximately ${selectedLength.desc}. Use Markdown for formatting (headings, bold text, lists).`;
 
       const { data } = await axios.post(
         "/api/ai/generate-article",
@@ -47,6 +54,7 @@ const WriteArticle = () => {
           headers: { Authorization: `Bearer ${await getToken()}` },
         },
       );
+
       if (data.success) {
         setContent(data.content);
       } else {
@@ -60,7 +68,18 @@ const WriteArticle = () => {
 
   return (
     <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-stretch gap-6 lg:h-[calc(100vh-140px)] pb-10 font-outfit lg:overflow-hidden overflow-y-auto">
-      {/* LEFT COLUMN: Configuration Form */}
+      {/* Inline Style for the Scrollbar to match BlogTitles */}
+      <style>{`
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { 
+          background: ${themeColor}40; 
+          border-radius: 10px; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: ${themeColor}80; }
+      `}</style>
+
+      {/* 1. LEFT COLUMN: Configuration Form */}
       <form
         onSubmit={onSubmitHandler}
         className="w-full lg:w-[400px] p-8 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col shrink-0"
@@ -77,7 +96,7 @@ const WriteArticle = () => {
           </h1>
         </div>
 
-        <div className="space-y-6 flex-1 overflow-y-auto pr-1">
+        <div className="space-y-6 flex-1 overflow-y-auto pr-1 custom-scroll">
           {/* Topic Input */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -90,13 +109,14 @@ const WriteArticle = () => {
               onChange={(e) => setInput(e.target.value)}
               value={input}
               className="w-full p-4 h-32 outline-none text-sm rounded-xl border border-gray-100 bg-gray-50 focus:bg-white transition-all resize-none leading-relaxed"
-              style={{ focusVisible: { borderColor: themeColor } }}
-              placeholder="e.g. The impact of blockchain on global finance..."
+              onFocus={(e) => (e.target.style.borderColor = themeColor)}
+              onBlur={(e) => (e.target.style.borderColor = "#F3F4F6")}
+              placeholder="e.g. The future of AI in healthcare..."
               required
             />
           </div>
 
-          {/* Compact Length Selection */}
+          {/* Length Selection */}
           <div>
             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
               Target Length
@@ -111,7 +131,7 @@ const WriteArticle = () => {
                     onClick={() => setSelectedLength(item)}
                     className={`group flex flex-col items-center justify-center py-3 border rounded-xl transition-all duration-200 ${
                       isSelected
-                        ? "text-white shadow-md"
+                        ? "text-white shadow-sm"
                         : "bg-white text-gray-400 border-gray-100 hover:bg-gray-50"
                     }`}
                     style={{
@@ -149,55 +169,62 @@ const WriteArticle = () => {
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              <Edit className="w-4 h-4" /> Generate Article
+              <Wand2 className="w-4 h-4" /> Generate Article
             </>
           )}
         </button>
       </form>
 
-      {/* RIGHT COLUMN: Article Preview */}
+      {/* 2. RIGHT COLUMN: Article Preview */}
       <div className="flex-1 p-8 bg-white rounded-2xl flex flex-col border border-gray-100 shadow-sm overflow-hidden">
-        {/* Header */}
+        {/* Header: shrink-0 ensures it stays at the top */}
         <div className="flex items-center justify-between border-b border-gray-50 pb-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-50 rounded-lg">
-              <FileText className="w-5 h-5" style={{ color: themeColor }} />
-            </div>
+            <FileText className="w-5 h-5" style={{ color: themeColor }} />
             <h1 className="text-xl font-bold text-gray-900">Preview</h1>
           </div>
           {content && (
             <button
               onClick={() => {
                 navigator.clipboard.writeText(content);
-                toast.success("Copied to clipboard!");
+                toast.success("Copied!");
               }}
-              className="text-[10px] font-bold uppercase text-gray-400 hover:text-indigo-600 transition-colors"
+              className="text-[10px] font-bold text-gray-400 hover:text-gray-600 uppercase"
             >
               Copy Text
             </button>
           )}
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto mt-6 pr-4 scroll-smooth flex justify-center items-center">
-          {!content ? (
-            <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center px-8">
-              <Edit
-                className="w-10 h-10 opacity-20"
-                style={{ color: themeColor }}
+        {/* Content Area: flex-1 fills remaining space */}
+        <div className="flex-1 overflow-y-auto mt-4 pr-2 custom-scroll scroll-smooth">
+          {loading ? (
+            /* CENTERED LOADING */
+            <div className="h-full flex flex-col justify-center items-center gap-4 text-center">
+              <div
+                className="w-10 h-10 border-4 border-gray-100 rounded-full animate-spin"
+                style={{ borderTopColor: themeColor }}
               />
-
-              <p className="leading-relaxed">
+              <p className="text-sm text-gray-400">
+                AI is writing your article...
+              </p>
+            </div>
+          ) : !content ? (
+            /* CENTERED EMPTY STATE */
+            <div className="h-full flex flex-col justify-center items-center gap-4 text-gray-400 text-center px-8 opacity-40">
+              <FileText className="w-10 h-10" style={{ color: themeColor }} />
+              <p>
                 Enter a topic and click{" "}
                 <span className="font-bold text-gray-600">
                   "Generate Article"
                 </span>{" "}
-                to see the magic.
+                to see the results
               </p>
             </div>
           ) : (
+            /* SCROLLABLE ARTICLE CONTENT: Starts at top */
             <div className="text-gray-700 leading-relaxed pb-10">
-              <div className="reset-tw">
+              <div className="reset-tw prose prose-sm max-w-none">
                 <Markdown>{content}</Markdown>
               </div>
             </div>
