@@ -44,9 +44,8 @@ const BlogTitles = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      setContent(""); // Clears the UI immediately
+      setContent("");
 
-      // Updated prompt to ensure multiple titles are generated
       const prompt = `Generate 10 catchy and SEO-friendly blog titles about ${input} for the ${selectedCategory} category.`;
 
       const { data } = await axios.post(

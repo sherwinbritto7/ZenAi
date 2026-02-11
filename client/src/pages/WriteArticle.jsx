@@ -92,7 +92,7 @@ const WriteArticle = () => {
             <Sparkles className="w-5 h-5" style={{ color: themeColor }} />
           </div>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">
-            Article Config
+            AI Article Generator
           </h1>
         </div>
 
@@ -181,7 +181,9 @@ const WriteArticle = () => {
         <div className="flex items-center justify-between border-b border-gray-50 pb-4 shrink-0">
           <div className="flex items-center gap-3">
             <FileText className="w-5 h-5" style={{ color: themeColor }} />
-            <h1 className="text-xl font-bold text-gray-900">Preview</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              Generated Article
+            </h1>
           </div>
           {content && (
             <button
