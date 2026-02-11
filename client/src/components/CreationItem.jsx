@@ -13,7 +13,9 @@ const CreationItem = ({ item, onDelete }) => {
 
   const handleCopy = (e) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(item.content);
+    // Use content for text, or the URL for images
+    const textToCopy = item.type === "image" ? item.content : item.content;
+    navigator.clipboard.writeText(textToCopy);
     alert("Copied to clipboard!");
   };
 
@@ -31,17 +33,25 @@ const CreationItem = ({ item, onDelete }) => {
       }`}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="p-2.5 bg-gray-50 rounded-xl text-gray-400 group-hover:text-[#3744FB] transition-colors">
+      {/* Header Section: Adjusted to items-start for long titles */}
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex items-start gap-4 min-w-0 flex-1">
+          {/* Icon Container */}
+          <div className="mt-1 p-2.5 bg-gray-50 rounded-xl text-gray-400 shrink-0">
             {item.type === "image" ? (
               <ImageIcon size={20} />
             ) : (
               <FileText size={20} />
             )}
           </div>
-          <div className="min-w-0">
-            <h2 className="font-bold text-gray-900 truncate leading-tight">
+
+          {/* Title and Date */}
+          <div className="min-w-0 flex-1">
+            <h2
+              className={`font-bold text-gray-900 leading-tight transition-all duration-300 ${
+                expanded ? "whitespace-normal break-words" : "truncate"
+              }`}
+            >
               {item.prompt}
             </h2>
             <p className="text-xs text-gray-500 mt-1 font-medium">
@@ -54,24 +64,28 @@ const CreationItem = ({ item, onDelete }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Action badges and Chevron */}
+        <div className="flex items-center gap-3 shrink-0 mt-1">
           <span className="hidden sm:inline-block px-3 py-1 bg-blue-50 text-[#3744FB] text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
             {item.type}
           </span>
           <ChevronDown
             size={18}
-            className={`text-gray-400 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            className={`text-gray-400 transition-transform duration-300 ${
+              expanded ? "rotate-180" : ""
+            }`}
           />
         </div>
       </div>
 
+      {/* Expanded Content Section */}
       {expanded && (
         <div
-          className="mt-5 pt-5 border-t border-gray-100 cursor-default"
+          className="mt-5 pt-5 border-t border-gray-100 cursor-default animate-in fade-in slide-in-from-top-2 duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {/* TOOLBAR */}
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex justify-between items-center mb-4">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               {item.type === "image" ? "Generated Asset" : "AI Response"}
             </span>
@@ -83,19 +97,23 @@ const CreationItem = ({ item, onDelete }) => {
                 className="flex items-center gap-2 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-all text-xs font-bold border border-red-100"
               >
                 <Trash2 size={14} />
-                Delete
+                <span className="hidden xs:inline">Delete</span>
               </button>
 
+              {/* COPY BUTTON */}
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-[#3744FB]/5 text-gray-500 hover:text-[#3744FB] rounded-lg transition-all text-xs font-bold border border-gray-100"
               >
                 <Copy size={14} />
-                Copy {item.type === "image" ? "URL" : "Content"}
+                <span className="hidden xs:inline">
+                  Copy {item.type === "image" ? "URL" : "Content"}
+                </span>
               </button>
             </div>
           </div>
 
+          {/* CONTENT DISPLAY */}
           {item.type === "image" ? (
             <div className="max-w-md mx-auto sm:mx-0">
               <img
