@@ -23,12 +23,11 @@ const GenerateImages = () => {
   const secondaryColor = pageTheme?.bg?.to || "#3B82F6";
 
   const imageStyles = [
-    "Realistic",
+    "Realistic Style",
     "Ghibli Style",
     "Anime Style",
     "Cartoon Style",
     "Fantasy Style",
-    "Realistic Style",
     "3D Style",
     "Portrait Style",
   ];
