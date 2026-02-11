@@ -27,6 +27,4 @@ ZenAi is a full-stack AI-powered productivity suite built with the **PERN stack*
 * **File Parsing:** pdf-parse-fork & Multer
 
 ## Live Demo: [Click to open](https://zenai.vercel.app/)
-   ```bash
-   git clone [https://github.com/your-username/ZenAi.git](https://github.com/your-username/ZenAi.git)
-   cd ZenAi
+   
