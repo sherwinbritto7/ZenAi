@@ -94,7 +94,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
           <div className="mt-1.5 px-3 py-0.5 rounded-full bg-[#3744FB]/5 border border-[#3744FB]/10">
             <div className="text-[9px] uppercase tracking-[0.15em] text-[#3744FB] font-black">
               <Protect plan="premium" fallback={<span>Free Plan</span>}>
-                <span>Pro Member</span>
+                <span>Premium Member</span>
               </Protect>
             </div>
           </div>
