@@ -5,10 +5,7 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 // import pdf from "pdf-parse/lib/pdf-parse.js";;
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-// Destructure the Class as per the v2 documentation
-const { PDFParse } = require("pdf-parse");
+import pdf from "pdf-parse-fork";
 
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -230,13 +227,10 @@ export const resumeReview = async (req, res) => {
     // 1. Read the file into a buffer
     const dataBuffer = fs.readFileSync(resume.path);
 
-    // 2. Initialize the Class with the buffer
-    // The v2 API uses an object constructor: { data: buffer }
-    const parser = new PDFParse({ data: dataBuffer });
-
-    // 3. Get the text
-    const result = await parser.getText();
-    const pdfText = result.text;
+    // 2. Parse the PDF using the fork
+    // The fork removes the canvas dependency that crashes Vercel
+    const data = await pdf(dataBuffer);
+    const pdfText = data.text;
 
     if (!pdfText || pdfText.trim().length === 0) {
       return res.json({
@@ -245,18 +239,18 @@ export const resumeReview = async (req, res) => {
       });
     }
 
-    // 4. Send to AI (Gemini)
+    // 3. Send to AI (Gemini)
     const prompt = `Review this resume and provide an ATS score and feedback: \n\n ${pdfText}`;
 
     const response = await AI.chat.completions.create({
-      model: "gemini-3-flash-preview", // Use stable model name
+      model: "gemini-3-flash-preview",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
     });
 
     const analysis = response.choices[0].message.content;
 
-    // 5. DB Insert
+    // 4. DB Insert
     await sql`INSERT INTO creations (user_id, prompt, content, type) 
               VALUES (${userId}, 'Resume Review', ${analysis}, 'resume-review')`;
 
@@ -265,6 +259,7 @@ export const resumeReview = async (req, res) => {
     console.error("Resume Review Error:", error);
     res.json({ success: false, message: "Analysis failed. Please try again." });
   } finally {
+    // Cleanup the temp file
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
