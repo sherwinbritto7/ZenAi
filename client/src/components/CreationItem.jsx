@@ -11,7 +11,6 @@ import {
 const CreationItem = ({ item, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
 
-  // Helper to copy content to clipboard
   const handleCopy = (e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(item.content);
