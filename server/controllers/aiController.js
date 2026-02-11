@@ -172,7 +172,7 @@ export const removeImageBackground = async (req, res) => {
 export const removeImageObject = async (req, res) => {
   try {
     const { userId } = req.auth();
-    // 1. Match the key from frontend (we used 'prompt' in formData)
+
     const { prompt } = req.body;
     const file = req.file;
     const plan = req.plan;
@@ -188,26 +188,21 @@ export const removeImageObject = async (req, res) => {
       });
     }
 
-    // 2. Upload the original image first
     const uploadResponse = await cloudinary.uploader.upload(file.path, {
       folder: "object_removal",
     });
 
-    // 3. Generate the URL with the Generative AI effect
-    // Syntax must be: gen_remove:prompt_yourobject
     const imageUrl = cloudinary.url(uploadResponse.public_id, {
       transformation: [{ effect: `gen_remove:prompt_${prompt}` }],
       secure: true,
       resource_type: "image",
     });
 
-    // 4. Save to DB
     await sql` 
       INSERT INTO creations (user_id, prompt, content, type) 
       VALUES (${userId}, ${`Removed ${prompt}`}, ${imageUrl}, 'image')
     `;
 
-    // 5. Send 'resultImage' to match the frontend state
     res.json({ success: true, resultImage: imageUrl });
   } catch (error) {
     console.error("Object Removal Error:", error.message);
@@ -224,11 +219,8 @@ export const resumeReview = async (req, res) => {
     if (!resume)
       return res.json({ success: false, message: "No file uploaded." });
 
-    // 1. Read the file into a buffer
     const dataBuffer = fs.readFileSync(resume.path);
 
-    // 2. Parse the PDF using the fork
-    // The fork removes the canvas dependency that crashes Vercel
     const data = await pdf(dataBuffer);
     const pdfText = data.text;
 
@@ -239,7 +231,6 @@ export const resumeReview = async (req, res) => {
       });
     }
 
-    // 3. Send to AI (Gemini)
     const prompt = `Review this resume and provide an ATS score and feedback: \n\n ${pdfText}`;
 
     const response = await AI.chat.completions.create({
@@ -250,7 +241,6 @@ export const resumeReview = async (req, res) => {
 
     const analysis = response.choices[0].message.content;
 
-    // 4. DB Insert
     await sql`INSERT INTO creations (user_id, prompt, content, type) 
               VALUES (${userId}, 'Resume Review', ${analysis}, 'resume-review')`;
 
@@ -259,7 +249,6 @@ export const resumeReview = async (req, res) => {
     console.error("Resume Review Error:", error);
     res.json({ success: false, message: "Analysis failed. Please try again." });
   } finally {
-    // Cleanup the temp file
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
