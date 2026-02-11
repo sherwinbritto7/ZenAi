@@ -42,7 +42,7 @@ const WriteArticle = () => {
       setLoading(true);
       setContent(""); // Clears the UI immediately
 
-      const prompt = `Write a comprehensive, professional article about ${input} in approximately ${selectedLength.desc}. Use Markdown for formatting (headings, bold text, lists).`;
+      const prompt = `Write a comprehensive, professional article about ${input} in approximately ${selectedLength.desc}.`;
 
       const { data } = await axios.post(
         "/api/ai/generate-article",
@@ -224,7 +224,7 @@ const WriteArticle = () => {
           ) : (
             /* SCROLLABLE ARTICLE CONTENT: Starts at top */
             <div className="text-gray-700 leading-relaxed pb-10">
-              <div className="reset-tw prose prose-sm max-w-none">
+              <div className="reset-tw">
                 <Markdown>{content}</Markdown>
               </div>
             </div>
