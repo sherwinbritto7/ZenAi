@@ -32,10 +32,6 @@ const Hero = () => {
         >
           <span className="relative z-10">Start Creating Now</span>
         </button>
-
-        <button className="bg-white/80 backdrop-blur-sm px-10 py-4 rounded-full border border-gray-200 text-gray-700 hover:bg-white hover:border-gray-300 hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm w-full sm:w-auto">
-          Watch Demo
-        </button>
       </div>
 
       {/* Trust Badge - Clean & Integrated */}
